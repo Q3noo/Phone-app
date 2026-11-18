@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Notelet</string>
+
+    <!-- Widget -->
+    <string name="widget_title">Notes &amp; Tasks</string>
+    <string name="widget_description">Write notes and tasks right from your home screen</string>
+    <string name="widget_empty">Tap + to write your first note</string>
+    <string name="add_note">Add a note or task</string>
+
+    <!-- Main screen -->
+    <string name="new_item">New</string>
+    <string name="empty_title">Nothing here yet</string>
+    <string name="empty_body">Tap New to write a note or task. Add the widget to jot things down straight from your home screen.</string>
+    <string name="add_widget">Add widget to home screen</string>
+    <string name="add_widget_manually">Long-press your home screen, tap Widgets, then pick Notelet</string>
+    <string name="notifications_off">Pop-ups are turned off for Notelet</string>
+    <string name="turn_on">Turn on</string>
+
+    <!-- Editor -->
+    <string name="new_note">New note</string>
+    <string name="new_task">New task</string>
+    <string name="edit_note">Edit note</string>
+    <string name="edit_task">Edit task</string>
+    <string name="type_note">Note</string>
+    <string name="type_task">Task</string>
+    <string name="hint_note">Write a note</string>
+    <string name="hint_task">What needs doing?</string>
+    <string name="helper_text">The first line becomes the pop-up title</string>
+    <string name="mark_done">Done</string>
+    <string name="mark_not_done">Mark as not done</string>
+    <string name="reminder_section">Pop-up reminder</string>
+    <string name="in_15_min">In 15 min</string>
+    <string name="in_1_hour">In 1 hour</string>
+    <string name="pick_time">Pick date &amp; time…</string>
+    <string name="no_reminder">No pop-up set</string>
+    <string name="remove">Remove</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="delete_confirm">Delete this for good?</string>
+    <string name="error_empty">Write something first</string>
+    <string name="error_past">That time has already passed. Pick a later one.</string>
+    <string name="note_missing">That note no longer exists</string>
+    <string name="notifications_denied">Without notification access the pop-ups can\'t appear</string>
+
+    <!-- Reminder wording -->
+    <string name="reminder_at">🔔 %1$s</string>
+    <string name="reminder_passed">%1$s (already passed)</string>
+    <string name="snoozed_until">💤 Snoozed until %1$s</string>
+    <string name="reminder_set">Pop-up set for %1$s</string>
+    <string name="today_at">Today, %1$s</string>
+    <string name="tomorrow_at">Tomorrow, %1$s</string>
+    <string name="repeat_none">Once</string>
+    <string name="repeat_hourly">Every hour</string>
+    <string name="repeat_daily">Every day</string>
+    <string name="repeat_weekdays">Weekdays</string>
+    <string name="repeat_weekly">Every week</string>
+
+    <!-- Pop-up notification -->
+    <string name="channel_name">Pop-up reminders</string>
+    <string name="channel_description">The pop-ups for your notes and tasks</string>
+    <string name="action_done">Done</string>
+    <string name="action_snooze">Snooze %1$d min</string>
+    <string name="notification_task_hint">Tap Done when it\'s finished</string>
+</resources>
