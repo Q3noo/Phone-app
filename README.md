@@ -3,12 +3,20 @@
 An Android home-screen widget for jotting down notes and tasks, with pop-up
 reminders at whatever times you choose.
 
-- **Widget:** shows your notes and tasks. Tap **+** to write a new one in a small window
-  that opens over the home screen. Tap a row to edit it, or tap a task's checkbox to tick it off.
-- **Pop-ups:** give any note a time (in 15 min, in 1 hour, tomorrow morning, or any
-  date and time you pick). It can repeat every hour, every day, on weekdays, or every week.
-  At that time it drops down from the top of the screen as a heads-up pop-up, even when the
-  app is closed. The pop-up has **Done** (for tasks) and **Snooze 10 min** buttons.
+- **Widget:** every note and task is its own rounded card. Tap **+** to write a new one in a
+  small window that opens over the home screen. Tap a card to edit it, or tap a task's circle
+  to tick it off. Finished tasks stay, greyed out and crossed out, until you tap **Clear done**
+  (or **Clear all**, which asks first) at the bottom of the widget.
+- **Pop-ups at an exact time:** in 15 min, in 1 hour, tomorrow morning, or any date and time you pick.
+- **Pop-ups in a time frame:** choose a frame such as "this evening" or 14:00–16:00, and the
+  pop-up arrives at a random moment inside it. A repeating frame picks a new random moment each time.
+- **−15 / +15 buttons** on each card move its upcoming pop-up (or its whole time frame)
+  15 minutes earlier or later.
+- Reminders can repeat every hour, every day, on weekdays, or every week. When it's time,
+  the pop-up drops down from the top of the screen, even when the app is closed, with
+  **Done** (for tasks) and **Snooze 10 min** buttons.
+- **Light and dark mode:** a calm warm-paper and soft-teal palette by day and a soft charcoal
+  and mint palette at night, which switch automatically with the phone's mode.
 - **Custom pop-up text:** the first line of a note becomes the pop-up title,
   and the rest becomes its message.
 - Reminders come back after the phone restarts. If one was missed while the phone was off,
@@ -56,10 +64,12 @@ With Android Studio, open this folder and press Run. From a terminal, with the A
 | File | What it does |
 | --- | --- |
 | `NoteWidgetProvider.kt`, `NoteWidgetService.kt` | The home-screen widget and its list |
-| `WidgetClickActivity.kt` | Invisible screen that handles taps on widget rows |
-| `EditNoteActivity.kt` | The floating editor (text, note/task, pop-up time, repeat) |
+| `WidgetClickActivity.kt` | Invisible screen that handles taps on widget cards (open, tick off, −15/+15) |
+| `WidgetActionReceiver.kt`, `ConfirmClearActivity.kt` | The widget's Clear done and Clear all buttons |
+| `EditNoteActivity.kt` | The floating editor (text, note/task, exact time or time frame, repeat) |
 | `MainActivity.kt`, `NotesAdapter.kt` | The in-app list of everything |
-| `Note.kt` | The note model and the repeat/snooze rules |
+| `Note.kt` | The note model and the rules for time frames, repeats, snoozing and moving pop-ups |
+| `res/values/colors.xml`, `res/values-night/colors.xml` | The day and night colour palettes |
 | `NoteStore.kt` | Saves notes on the phone |
 | `NoteActions.kt` | Keeps alarms, pop-ups and the widget in sync whenever a note changes |
 | `ReminderScheduler.kt`, `ReminderReceiver.kt` | Sets exact alarms and fires the pop-ups |

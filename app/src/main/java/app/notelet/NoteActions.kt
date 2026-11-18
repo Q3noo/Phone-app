@@ -7,11 +7,11 @@ object NoteActions {
 
     fun save(context: Context, note: Note) {
         val now = System.currentTimeMillis()
-        val remindAt = note.remindAt
-        // A repeating reminder whose time slipped by (e.g. while the task was done)
+        val pop = note.popAt
+        // A repeating reminder whose moment slipped by (e.g. while the task was done)
         // picks up again at its next occurrence instead of firing immediately.
-        val normalized = if (!note.done && note.repeat != Repeat.NONE && remindAt != null && remindAt <= now) {
-            note.copy(remindAt = note.repeat.nextAfter(remindAt, now))
+        val normalized = if (!note.done && note.repeat != Repeat.NONE && pop != null && pop <= now) {
+            note.planned(now)
         } else {
             note
         }
@@ -40,7 +40,39 @@ object NoteActions {
 
     fun snooze(context: Context, id: Long, minutes: Int) {
         val note = NoteStore.get(context, id) ?: return
-        save(context, note.copy(snoozeUntil = System.currentTimeMillis() + minutes * 60_000L))
+        save(context, note.copy(snoozeUntil = System.currentTimeMillis() + minutes * MINUTE))
         Notifications.cancel(context, id)
+    }
+
+    /** Moves the upcoming pop-up by [minutes]. Returns false if it can't be moved. */
+    fun shift(context: Context, id: Long, minutes: Int): Boolean {
+        val note = NoteStore.get(context, id) ?: return false
+        val moved = note.shifted(minutes, System.currentTimeMillis()) ?: return false
+        save(context, moved)
+        return true
+    }
+
+    /** Removes finished tasks. Returns them so the change can be undone. */
+    fun clearDone(context: Context): List<Note> = clear(context) { it.done }
+
+    /** Removes everything. Returns it all so the change can be undone. */
+    fun clearAll(context: Context): List<Note> = clear(context) { true }
+
+    /** Puts back notes removed by [clearDone] or [clearAll]. */
+    fun restore(context: Context, notes: List<Note>) {
+        if (notes.isEmpty()) return
+        NoteStore.putAll(context, notes)
+        notes.forEach { ReminderScheduler.schedule(context, it) }
+        NoteWidgetProvider.refreshAll(context)
+    }
+
+    private fun clear(context: Context, predicate: (Note) -> Boolean): List<Note> {
+        val removed = NoteStore.removeWhere(context, predicate)
+        removed.forEach {
+            ReminderScheduler.cancel(context, it.id)
+            Notifications.cancel(context, it.id)
+        }
+        NoteWidgetProvider.refreshAll(context)
+        return removed
     }
 }

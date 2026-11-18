@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Day palette: warm paper with a soft teal accent.
+    The night versions of these colours are in values-night/colors.xml; Android
+    switches between them by itself, for the app and for the widget.
+-->
 <resources>
-    <color name="ic_launcher_background">#6750A4</color>
+    <color name="ic_launcher_background">#2C6E63</color>
 
-    <color name="widget_background">#F7F2FA</color>
-    <color name="widget_item">#FFFFFF</color>
-    <color name="widget_on_background">#1D1B20</color>
-    <color name="widget_secondary">#605D66</color>
-    <color name="widget_accent">#6750A4</color>
-    <color name="widget_on_accent">#FFFFFF</color>
+    <color name="nl_background">#F4F2ED</color>
+    <color name="nl_box">#ECE9E2</color>
+    <color name="nl_card">#FFFFFF</color>
+    <color name="nl_card_done">#E3E0D8</color>
+    <color name="nl_dialog">#FAF9F6</color>
+
+    <color name="nl_text">#1D2321</color>
+    <color name="nl_text_secondary">#5A6360</color>
+
+    <color name="nl_accent">#2C6E63</color>
+    <color name="nl_on_accent">#FFFFFF</color>
+    <color name="nl_accent_soft">#D3ECE5</color>
+    <color name="nl_on_accent_soft">#0E3D35</color>
+
+    <color name="nl_neutral_pill">#E2DED5</color>
+    <color name="nl_on_neutral_pill">#3D4543</color>
+    <color name="nl_danger">#B3261E</color>
+    <color name="nl_outline">#8A938F</color>
+    <color name="nl_outline_soft">#D5D1C7</color>
 </resources>

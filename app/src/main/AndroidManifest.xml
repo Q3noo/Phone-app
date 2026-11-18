@@ -61,6 +61,15 @@
             android:taskAffinity=""
             android:theme="@android:style/Theme.NoDisplay" />
 
+        <!-- Invisible: only shows the "Clear all?" question from the widget. -->
+        <activity
+            android:name=".ConfirmClearActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Notelet.Transparent" />
+
         <receiver
             android:name=".NoteWidgetProvider"
             android:exported="true">
@@ -83,6 +92,10 @@
 
         <receiver
             android:name=".NotificationActionReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".WidgetActionReceiver"
             android:exported="false" />
 
         <receiver

@@ -32,8 +32,20 @@ object NoteStore {
         notes.filter { it.id != note.id } + note
     }
 
+    fun putAll(context: Context, added: List<Note>) = update(context) { notes ->
+        val ids = added.map { it.id }.toSet()
+        notes.filter { it.id !in ids } + added
+    }
+
     fun remove(context: Context, id: Long) = update(context) { notes ->
         notes.filter { it.id != id }
+    }
+
+    /** Removes every note matching [predicate] and returns what was removed. */
+    fun removeWhere(context: Context, predicate: (Note) -> Boolean): List<Note> = synchronized(lock) {
+        val (removed, kept) = read(context).partition(predicate)
+        if (removed.isNotEmpty()) write(context, kept)
+        removed
     }
 
     fun lastWasTask(context: Context): Boolean = prefs(context).getBoolean(KEY_LAST_WAS_TASK, false)

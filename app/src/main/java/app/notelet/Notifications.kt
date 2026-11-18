@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 
 /** Builds the pop-ups. A high-importance channel makes Android show them as heads-up banners. */
 object Notifications {
@@ -53,6 +54,7 @@ object Notifications {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setColor(ContextCompat.getColor(context, R.color.nl_accent))
 
         val details = note.details
         if (details.isNotEmpty()) {

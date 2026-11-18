@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Night palette: soft charcoal (not pure black) with a gentle mint accent. -->
 <resources>
-    <color name="widget_background">#211F26</color>
-    <color name="widget_item">#2B2930</color>
-    <color name="widget_on_background">#E6E0E9</color>
-    <color name="widget_secondary">#CAC4D0</color>
-    <color name="widget_accent">#D0BCFF</color>
-    <color name="widget_on_accent">#381E72</color>
+    <color name="nl_background">#121615</color>
+    <color name="nl_box">#191E1D</color>
+    <color name="nl_card">#232927</color>
+    <color name="nl_card_done">#1B201F</color>
+    <color name="nl_dialog">#1E2422</color>
+
+    <color name="nl_text">#E1E6E4</color>
+    <color name="nl_text_secondary">#A6B0AC</color>
+
+    <color name="nl_accent">#8FD3C3</color>
+    <color name="nl_on_accent">#00382F</color>
+    <color name="nl_accent_soft">#1F4A42</color>
+    <color name="nl_on_accent_soft">#C6EDE3</color>
+
+    <color name="nl_neutral_pill">#2B3230</color>
+    <color name="nl_on_neutral_pill">#C3CCC8</color>
+    <color name="nl_danger">#F2B8B5</color>
+    <color name="nl_outline">#7A8480</color>
+    <color name="nl_outline_soft">#353D3B</color>
 </resources>

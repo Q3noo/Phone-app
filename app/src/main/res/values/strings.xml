@@ -7,11 +7,28 @@
     <string name="widget_description">Write notes and tasks right from your home screen</string>
     <string name="widget_empty">Tap + to write your first note</string>
     <string name="add_note">Add a note or task</string>
+    <string name="count_open">%1$d open</string>
+    <string name="count_open_done">%1$d open · %2$d done</string>
+    <string name="earlier_15">−15</string>
+    <string name="later_15">+15</string>
+    <string name="earlier_desc">Pop up 15 minutes earlier</string>
+    <string name="later_desc">Pop up 15 minutes later</string>
+    <string name="cant_move">Can\'t move a pop-up into the past</string>
+
+    <!-- Clearing -->
+    <string name="clear_done">Clear done</string>
+    <string name="clear_all">Clear all</string>
+    <string name="clear_only_done">Only done ones</string>
+    <string name="clear_all_title">Clear everything?</string>
+    <string name="clear_all_message">This deletes all %1$d notes and tasks.</string>
+    <string name="cleared">Cleared %1$d</string>
+    <string name="cleared_done">Cleared %1$d done</string>
+    <string name="nothing_done">No finished tasks to clear</string>
+    <string name="undo">Undo</string>
 
     <!-- Main screen -->
-    <string name="new_item">New</string>
     <string name="empty_title">Nothing here yet</string>
-    <string name="empty_body">Tap New to write a note or task. Add the widget to jot things down straight from your home screen.</string>
+    <string name="empty_body">Tap + to write a note or task. Add the widget to jot things down straight from your home screen.</string>
     <string name="add_widget">Add widget to home screen</string>
     <string name="add_widget_manually">Long-press your home screen, tap Widgets, then pick Notelet</string>
     <string name="notifications_off">Pop-ups are turned off for Notelet</string>
@@ -30,11 +47,23 @@
     <string name="mark_done">Done</string>
     <string name="mark_not_done">Mark as not done</string>
     <string name="reminder_section">Pop-up reminder</string>
+    <string name="mode_exact">Exact time</string>
+    <string name="mode_frame">Time frame</string>
+    <string name="mode_frame_hint">Pops up once, at a random moment inside the frame</string>
     <string name="in_15_min">In 15 min</string>
     <string name="in_1_hour">In 1 hour</string>
-    <string name="pick_time">Pick date &amp; time…</string>
+    <string name="frame_next_hour">Next hour</string>
+    <string name="frame_next_3h">Next 3 hours</string>
+    <string name="frame_evening">This evening</string>
+    <string name="frame_tomorrow_morning">Tomorrow morning</string>
+    <string name="pick">Pick…</string>
+    <string name="pick_day">Which day?</string>
+    <string name="pick_time_title">What time?</string>
+    <string name="from">From</string>
+    <string name="until">Until</string>
     <string name="no_reminder">No pop-up set</string>
     <string name="remove">Remove</string>
+    <string name="repeat_label">Repeat</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
@@ -46,9 +75,12 @@
 
     <!-- Reminder wording -->
     <string name="reminder_at">🔔 %1$s</string>
+    <string name="frame_at">🎲 %1$s</string>
+    <string name="frame_range">%1$s – %2$s</string>
     <string name="reminder_passed">%1$s (already passed)</string>
     <string name="snoozed_until">💤 Snoozed until %1$s</string>
     <string name="reminder_set">Pop-up set for %1$s</string>
+    <string name="frame_set">Pops up at a random moment: %1$s</string>
     <string name="today_at">Today, %1$s</string>
     <string name="tomorrow_at">Tomorrow, %1$s</string>
     <string name="repeat_none">Once</string>

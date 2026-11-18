@@ -8,9 +8,12 @@ import android.text.style.StrikethroughSpan
 import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
-import androidx.core.content.ContextCompat
 
-/** Supplies the rows of the widget's list. */
+/**
+ * Supplies the widget's note cards. Open and finished items use separate layouts, so
+ * all colours come from the layouts' day/night resources and never get stuck in the
+ * wrong mode.
+ */
 class NoteWidgetService : RemoteViewsService() {
 
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory = Factory(applicationContext)
@@ -27,59 +30,70 @@ class NoteWidgetService : RemoteViewsService() {
 
         override fun getCount(): Int = notes.size
         override fun getLoadingView(): RemoteViews? = null
-        override fun getViewTypeCount(): Int = 1
+        override fun getViewTypeCount(): Int = 2
         override fun getItemId(position: Int): Long = notes.getOrNull(position)?.id ?: position.toLong()
         override fun hasStableIds(): Boolean = true
 
         override fun getViewAt(position: Int): RemoteViews {
+            val note = notes.getOrNull(position)
+                ?: return RemoteViews(context.packageName, R.layout.widget_note_item)
+            return if (note.done) doneCard(note) else openCard(note)
+        }
+
+        private fun openCard(note: Note): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget_note_item)
-            val note = notes.getOrNull(position) ?: return views
+            views.setTextViewText(R.id.item_title, note.headline)
 
-            val headline = note.headline
-            if (note.done) {
-                val struck = SpannableString(headline)
-                struck.setSpan(StrikethroughSpan(), 0, struck.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                views.setTextViewText(R.id.item_title, struck)
-                views.setTextColor(R.id.item_title, ContextCompat.getColor(context, R.color.widget_secondary))
+            val details = note.details.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() }
+            if (details != null) {
+                views.setTextViewText(R.id.item_details, details)
+                views.setViewVisibility(R.id.item_details, View.VISIBLE)
             } else {
-                views.setTextViewText(R.id.item_title, headline)
-                views.setTextColor(R.id.item_title, ContextCompat.getColor(context, R.color.widget_on_background))
+                views.setViewVisibility(R.id.item_details, View.GONE)
             }
 
-            val subtitle = Format.reminderLine(context, note)
-                ?: note.details.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() }
-            if (subtitle != null) {
-                views.setTextViewText(R.id.item_subtitle, subtitle)
-                views.setViewVisibility(R.id.item_subtitle, View.VISIBLE)
+            val reminder = Format.reminderLine(context, note)
+            if (reminder != null) {
+                views.setTextViewText(R.id.item_time, reminder)
+                views.setViewVisibility(R.id.item_time_row, View.VISIBLE)
+                views.setOnClickFillInIntent(R.id.item_earlier, shift(note, -SHIFT_MINUTES))
+                views.setOnClickFillInIntent(R.id.item_later, shift(note, SHIFT_MINUTES))
             } else {
-                views.setViewVisibility(R.id.item_subtitle, View.GONE)
+                views.setViewVisibility(R.id.item_time_row, View.GONE)
             }
 
-            val open = Intent()
-                .putExtra(EXTRA_NOTE_ID, note.id)
-                .putExtra(WidgetClickActivity.EXTRA_ACTION, WidgetClickActivity.ACTION_OPEN)
-            views.setOnClickFillInIntent(R.id.item_root, open)
-
+            views.setOnClickFillInIntent(R.id.item_root, action(note, WidgetClickActivity.ACTION_OPEN))
             if (note.isTask) {
-                views.setImageViewResource(
-                    R.id.item_icon,
-                    if (note.done) R.drawable.ic_check_box else R.drawable.ic_check_box_blank,
-                )
-                views.setContentDescription(
-                    R.id.item_icon,
-                    context.getString(if (note.done) R.string.mark_not_done else R.string.mark_done),
-                )
-                val toggle = Intent()
-                    .putExtra(EXTRA_NOTE_ID, note.id)
-                    .putExtra(WidgetClickActivity.EXTRA_ACTION, WidgetClickActivity.ACTION_TOGGLE)
-                views.setOnClickFillInIntent(R.id.item_icon, toggle)
+                views.setImageViewResource(R.id.item_check, R.drawable.ic_task_open)
+                views.setContentDescription(R.id.item_check, context.getString(R.string.mark_done))
+                views.setOnClickFillInIntent(R.id.item_check, action(note, WidgetClickActivity.ACTION_TOGGLE))
             } else {
-                views.setImageViewResource(R.id.item_icon, R.drawable.ic_note)
-                views.setContentDescription(R.id.item_icon, context.getString(R.string.type_note))
-                // Rows get reused, so always replace whatever click this icon had before.
-                views.setOnClickFillInIntent(R.id.item_icon, open)
+                views.setImageViewResource(R.id.item_check, R.drawable.ic_note)
+                views.setContentDescription(R.id.item_check, context.getString(R.string.type_note))
+                views.setOnClickFillInIntent(R.id.item_check, action(note, WidgetClickActivity.ACTION_OPEN))
             }
             return views
         }
+
+        private fun doneCard(note: Note): RemoteViews {
+            val views = RemoteViews(context.packageName, R.layout.widget_note_item_done)
+            val struck = SpannableString(note.headline)
+            struck.setSpan(StrikethroughSpan(), 0, struck.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            views.setTextViewText(R.id.item_title, struck)
+            views.setOnClickFillInIntent(R.id.item_root, action(note, WidgetClickActivity.ACTION_OPEN))
+            views.setOnClickFillInIntent(R.id.item_check, action(note, WidgetClickActivity.ACTION_TOGGLE))
+            return views
+        }
+
+        private fun action(note: Note, action: String): Intent = Intent()
+            .putExtra(EXTRA_NOTE_ID, note.id)
+            .putExtra(WidgetClickActivity.EXTRA_ACTION, action)
+
+        private fun shift(note: Note, minutes: Int): Intent =
+            action(note, WidgetClickActivity.ACTION_SHIFT).putExtra(WidgetClickActivity.EXTRA_MINUTES, minutes)
+    }
+
+    companion object {
+        const val SHIFT_MINUTES = 15
     }
 }

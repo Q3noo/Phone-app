@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -28,7 +28,7 @@
                 android:id="@+id/type_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:checkedButton="@id/type_note"
+                app:checkedButton="@+id/type_note"
                 app:selectionRequired="true"
                 app:singleSelection="true">
 
@@ -55,6 +55,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="@string/hint_note"
+            app:boxCornerRadiusBottomEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusTopStart="16dp"
             app:helperText="@string/helper_text">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -78,14 +82,51 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:text="@string/reminder_section"
             android:textAppearance="?attr/textAppearanceTitleSmall" />
 
-        <HorizontalScrollView
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/mode_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp"
+            app:checkedButton="@+id/mode_exact"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/mode_exact"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/mode_exact" />
+
+            <Button
+                android:id="@+id/mode_frame"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/mode_frame" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <TextView
+            android:id="@+id/mode_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/mode_frame_hint"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+
+        <HorizontalScrollView
+            android:id="@+id/exact_chips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:scrollbars="none">
 
             <com.google.android.material.chip.ChipGroup
@@ -98,43 +139,107 @@
                     style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/in_15_min" />
+                    android:text="@string/in_15_min"
+                    app:chipCornerRadius="16dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_1h"
                     style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/in_1_hour" />
+                    android:text="@string/in_1_hour"
+                    app:chipCornerRadius="16dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_tomorrow"
                     style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    app:chipCornerRadius="16dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_pick"
                     style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/pick_time" />
+                    android:text="@string/pick"
+                    app:chipCornerRadius="16dp" />
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
+
+        <HorizontalScrollView
+            android:id="@+id/frame_chips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleLine="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_next_hour"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/frame_next_hour"
+                    app:chipCornerRadius="16dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_next_3h"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/frame_next_3h"
+                    app:chipCornerRadius="16dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_evening"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/frame_evening"
+                    app:chipCornerRadius="16dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_morning"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/frame_tomorrow_morning"
+                    app:chipCornerRadius="16dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_pick_frame"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pick"
+                    app:chipCornerRadius="16dp" />
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/editor_reminder_box"
             android:gravity="center_vertical"
-            android:minHeight="48dp"
-            android:orientation="horizontal">
+            android:minHeight="52dp"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="4dp">
 
             <TextView
                 android:id="@+id/reminder_label"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
                 android:text="@string/no_reminder"
                 android:textAppearance="?attr/textAppearanceBodyLarge" />
 
@@ -147,63 +252,83 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <HorizontalScrollView
-            android:id="@+id/repeat_scroll"
+        <LinearLayout
+            android:id="@+id/repeat_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="none"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical"
             android:visibility="gone">
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/repeat_group"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:checkedChip="@id/repeat_none"
-                app:selectionRequired="true"
-                app:singleLine="true"
-                app:singleSelection="true">
+                android:text="@string/repeat_label"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/repeat_group"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:checkedChip="@+id/repeat_none"
+                    app:selectionRequired="true"
+                    app:singleLine="true"
+                    app:singleSelection="true">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/repeat_none"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/repeat_none" />
+                    android:text="@string/repeat_none"
+                    app:chipCornerRadius="16dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/repeat_hourly"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/repeat_hourly" />
+                    android:text="@string/repeat_hourly"
+                    app:chipCornerRadius="16dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/repeat_daily"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/repeat_daily" />
+                    android:text="@string/repeat_daily"
+                    app:chipCornerRadius="16dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/repeat_weekdays"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/repeat_weekdays" />
+                    android:text="@string/repeat_weekdays"
+                    app:chipCornerRadius="16dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/repeat_weekly"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/repeat_weekly" />
-            </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
+                    android:text="@string/repeat_weekly"
+                    app:chipCornerRadius="16dp" />
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 

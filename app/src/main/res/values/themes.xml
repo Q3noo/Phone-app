@@ -1,14 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.Notelet" parent="Theme.Material3.DayNight">
+    <!-- The app's colours, applied to every screen by NoteletActivity. -->
+    <style name="NoteletPalette" parent="">
+        <item name="colorPrimary">@color/nl_accent</item>
+        <item name="colorOnPrimary">@color/nl_on_accent</item>
+        <item name="colorPrimaryContainer">@color/nl_accent_soft</item>
+        <item name="colorOnPrimaryContainer">@color/nl_on_accent_soft</item>
+        <item name="colorSecondary">@color/nl_accent</item>
+        <item name="colorOnSecondary">@color/nl_on_accent</item>
+        <item name="colorSecondaryContainer">@color/nl_accent_soft</item>
+        <item name="colorOnSecondaryContainer">@color/nl_on_accent_soft</item>
+        <item name="colorTertiary">@color/nl_accent</item>
+        <item name="android:colorBackground">@color/nl_background</item>
+        <item name="colorOnBackground">@color/nl_text</item>
+        <item name="colorSurface">@color/nl_background</item>
+        <item name="colorOnSurface">@color/nl_text</item>
+        <item name="colorSurfaceVariant">@color/nl_neutral_pill</item>
+        <item name="colorOnSurfaceVariant">@color/nl_text_secondary</item>
+        <item name="colorSurfaceContainerLowest">@color/nl_card</item>
+        <item name="colorSurfaceContainerLow">@color/nl_card</item>
+        <item name="colorSurfaceContainer">@color/nl_box</item>
+        <item name="colorSurfaceContainerHigh">@color/nl_dialog</item>
+        <item name="colorSurfaceContainerHighest">@color/nl_neutral_pill</item>
+        <item name="colorOutline">@color/nl_outline</item>
+        <item name="colorOutlineVariant">@color/nl_outline_soft</item>
+        <item name="colorError">@color/nl_danger</item>
+    </style>
+
+    <style name="Theme.Notelet" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/nl_background</item>
+        <item name="android:statusBarColor">@color/nl_background</item>
+        <item name="android:navigationBarColor">@color/nl_background</item>
+        <item name="android:windowLightStatusBar">@bool/nl_light_bars</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">@bool/nl_light_bars</item>
         <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
 
-    <!-- The editor floats as a dialog-sized window. -->
+    <!-- The editor floats as a rounded card. -->
     <style name="Theme.Notelet.Editor" parent="Theme.Material3.DayNight.Dialog">
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
         <item name="android:windowCloseOnTouchOutside">false</item>
+        <item name="android:windowBackground">@drawable/editor_background</item>
+    </style>
+
+    <!-- Invisible screen that only shows a dialog (the widget's Clear all). -->
+    <style name="Theme.Notelet.Transparent" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
     </style>
 </resources>
