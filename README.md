@@ -13,7 +13,10 @@ reminders at whatever times you choose.
   and the rest becomes its message.
 - Reminders come back after the phone restarts. If one was missed while the phone was off,
   it shows as soon as the phone is back on.
-- Notes stay on the phone. The app has no account, no internet access and no tracking.
+- **Offline by design:** the app has no internet permission, so Android itself blocks it from
+  going online. Every GitHub build checks the finished APK and fails if that ever changes.
+  Android's cloud backup is also turned off for the app, so your notes never leave the phone.
+  The app has no account and no tracking.
 
 Needs Android 8.0 or newer.
 
