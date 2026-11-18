@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.text.format.DateFormat
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -21,16 +20,10 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.datepicker.CalendarConstraints
-import com.google.android.material.datepicker.DateValidatorPointForward
-import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
 import java.util.Calendar
-import java.util.TimeZone
 
 /**
  * The note editor. It is a small floating window, so when it is opened from the
@@ -59,6 +52,8 @@ class EditNoteActivity : NoteletActivity() {
     private lateinit var clearReminder: Button
     private lateinit var repeatSection: View
     private lateinit var repeatGroup: ChipGroup
+    private lateinit var popsSection: View
+    private lateinit var popsGroup: ChipGroup
 
     private val askNotifications =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -86,6 +81,8 @@ class EditNoteActivity : NoteletActivity() {
         clearReminder = findViewById(R.id.clear_reminder)
         repeatSection = findViewById(R.id.repeat_section)
         repeatGroup = findViewById(R.id.repeat_group)
+        popsSection = findViewById(R.id.pops_section)
+        popsGroup = findViewById(R.id.pops_group)
 
         val noteId = intent.getLongExtra(EXTRA_NOTE_ID, -1L)
         if (noteId > 0) {
@@ -109,6 +106,7 @@ class EditNoteActivity : NoteletActivity() {
             if (note.windowMinutes > 0) {
                 windowMinutes = note.windowMinutes
                 modeGroup.check(R.id.mode_frame)
+                popsGroup.check(chipForPops(note.popCount))
             }
             repeatGroup.check(chipFor(note.repeat))
         } else {
@@ -193,6 +191,7 @@ class EditNoteActivity : NoteletActivity() {
         val at = remindAt
         clearReminder.isVisible = at != null
         repeatSection.isVisible = at != null
+        popsSection.isVisible = frame && at != null
         if (at == null) {
             reminderLabel.setText(R.string.no_reminder)
             return
@@ -225,60 +224,44 @@ class EditNoteActivity : NoteletActivity() {
 
     private fun pickExact() {
         val initial = remindAt?.takeIf { it > System.currentTimeMillis() } ?: nextWholeHour()
-        pickDate(initial) { day ->
-            pickTime(R.string.pick_time_title, initial) { hour, minute ->
-                setReminder(day.atTime(hour, minute))
-            }
+        showWheels(R.string.pick_when_title, initial, showDate = true, timeLabel = R.string.time_label) { at ->
+            setReminder(at)
         }
     }
 
+    /** Roll the day and start time, then the end time. */
     private fun pickFrame() {
         val initial = remindAt?.takeIf { it + windowMinutes * MINUTE > System.currentTimeMillis() } ?: nextWholeHour()
-        pickDate(initial) { day ->
-            pickTime(R.string.from, initial) { fromHour, fromMinute ->
-                val start = day.atTime(fromHour, fromMinute)
-                pickTime(R.string.until, start + windowMinutes * MINUTE) { toHour, toMinute ->
-                    var end = day.atTime(toHour, toMinute)
-                    if (end <= start) end += 24 * 60 * MINUTE // e.g. 22:00 until 01:00
-                    setReminder(start, ((end - start) / MINUTE).toInt().coerceIn(1, 24 * 60))
-                }
+        showWheels(
+            R.string.pick_frame_start_title, initial, showDate = true, timeLabel = R.string.from, positive = R.string.next,
+        ) { start ->
+            showWheels(
+                R.string.pick_frame_end_title, start + windowMinutes * MINUTE, showDate = false,
+                timeLabel = R.string.until, baseDay = start,
+            ) { chosenEnd ->
+                var end = chosenEnd
+                if (end <= start) end += 24 * 60 * MINUTE // e.g. 10 PM until 1 AM
+                setReminder(start, ((end - start) / MINUTE).toInt().coerceIn(1, 24 * 60))
             }
         }
     }
 
-    private fun pickDate(initial: Long, onPicked: (Calendar) -> Unit) {
-        val local = Calendar.getInstance().apply { timeInMillis = initial }
-        val utcSelection = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-            clear()
-            set(local.get(Calendar.YEAR), local.get(Calendar.MONTH), local.get(Calendar.DAY_OF_MONTH))
-        }.timeInMillis
-        val picker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText(R.string.pick_day)
-            .setSelection(utcSelection)
-            .setCalendarConstraints(
-                CalendarConstraints.Builder().setValidator(DateValidatorPointForward.now()).build()
-            )
-            .build()
-        picker.addOnPositiveButtonClickListener { selection ->
-            val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = selection }
-            onPicked(Calendar.getInstance().apply {
-                clear()
-                set(utc.get(Calendar.YEAR), utc.get(Calendar.MONTH), utc.get(Calendar.DAY_OF_MONTH))
-            })
-        }
-        picker.show(supportFragmentManager, "date")
-    }
-
-    private fun pickTime(titleRes: Int, initial: Long, onPicked: (Int, Int) -> Unit) {
-        val cal = Calendar.getInstance().apply { timeInMillis = initial }
-        val picker = MaterialTimePicker.Builder()
-            .setTimeFormat(if (DateFormat.is24HourFormat(this)) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H)
-            .setHour(cal.get(Calendar.HOUR_OF_DAY))
-            .setMinute(cal.get(Calendar.MINUTE))
-            .setTitleText(titleRes)
-            .build()
-        picker.addOnPositiveButtonClickListener { onPicked(picker.hour, picker.minute) }
-        picker.show(supportFragmentManager, "time_$titleRes")
+    private fun showWheels(
+        titleRes: Int,
+        initial: Long,
+        showDate: Boolean,
+        timeLabel: Int,
+        positive: Int = R.string.ok,
+        baseDay: Long = initial,
+        onPicked: (Long) -> Unit,
+    ) {
+        val wheels = WheelPicker(this, initial, showDate, timeLabel, baseDay)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(titleRes)
+            .setView(wheels.view)
+            .setPositiveButton(positive) { _, _ -> onPicked(wheels.selectedTime()) }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun save() {
@@ -292,9 +275,10 @@ class EditNoteActivity : NoteletActivity() {
         val old = existing
         val start = remindAt
         val window = if (start != null && isFrame()) windowMinutes else 0
+        val pops = if (window > 0) selectedPops() else 1
         val repeat = if (start == null) Repeat.NONE else selectedRepeat()
         val reminderChanged = old == null || old.remindAt != start ||
-            old.windowMinutes != window || old.repeat != repeat
+            old.windowMinutes != window || old.popCount != pops || old.repeat != repeat
 
         if (start != null && reminderChanged && repeat == Repeat.NONE && start + window * MINUTE <= now) {
             Toast.makeText(this, R.string.error_past, Toast.LENGTH_LONG).show()
@@ -310,7 +294,8 @@ class EditNoteActivity : NoteletActivity() {
             done = done,
             remindAt = start,
             windowMinutes = window,
-            randomAt = if (reminderChanged) null else old?.randomAt,
+            popCount = pops,
+            randomTimes = if (reminderChanged) emptyList() else old?.randomTimes.orEmpty(),
             repeat = repeat,
             snoozeUntil = if (reminderChanged || done) null else old?.snoozeUntil,
             lastNotifiedAt = old?.lastNotifiedAt ?: 0L,
@@ -323,8 +308,11 @@ class EditNoteActivity : NoteletActivity() {
 
         if (reminderChanged && note.hasUpcomingReminder) {
             val begin = note.remindAt!!
-            val message = if (note.windowMinutes > 0) {
-                getString(R.string.frame_set, Format.frameText(this, begin, note.windowMinutes))
+            val frame = Format.frameText(this, begin, note.windowMinutes)
+            val message = if (note.windowMinutes > 0 && note.popCount > 1) {
+                getString(R.string.frame_set_many, note.randomTimes.size, frame)
+            } else if (note.windowMinutes > 0) {
+                getString(R.string.frame_set, frame)
             } else {
                 getString(R.string.reminder_set, Format.whenText(this, begin))
             }
@@ -351,6 +339,20 @@ class EditNoteActivity : NoteletActivity() {
         R.id.repeat_weekdays -> Repeat.WEEKDAYS
         R.id.repeat_weekly -> Repeat.WEEKLY
         else -> Repeat.NONE
+    }
+
+    private fun selectedPops(): Int = when (popsGroup.checkedChipId) {
+        R.id.pops_2 -> 2
+        R.id.pops_3 -> 3
+        R.id.pops_5 -> 5
+        else -> 1
+    }
+
+    private fun chipForPops(count: Int): Int = when {
+        count >= 5 -> R.id.pops_5
+        count >= 3 -> R.id.pops_3
+        count == 2 -> R.id.pops_2
+        else -> R.id.pops_1
     }
 
     private fun chipFor(repeat: Repeat): Int = when (repeat) {

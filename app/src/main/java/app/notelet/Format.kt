@@ -31,7 +31,8 @@ object Format {
     fun reminderText(context: Context, note: Note): String? {
         val start = note.remindAt ?: return null
         return if (note.windowMinutes > 0) {
-            context.getString(R.string.frame_at, frameText(context, start, note.windowMinutes))
+            val frame = context.getString(R.string.frame_at, frameText(context, start, note.windowMinutes))
+            if (note.popCount > 1) "$frame · ${context.getString(R.string.pops_count, note.popCount)}" else frame
         } else {
             context.getString(R.string.reminder_at, whenText(context, start))
         }

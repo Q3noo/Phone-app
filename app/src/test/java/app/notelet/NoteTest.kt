@@ -177,6 +177,73 @@ class NoteTest {
         assertEquals(60, planned.windowMinutes)
     }
 
+    // ---- Several pop-ups spread randomly across one frame ----
+
+    @Test
+    fun severalPopUpsAreSpreadAcrossTheWholeFrame() {
+        for (seed in 0 until 200) {
+            val times = frame(14, 3).copy(popCount = 3).planned(at(), Random(seed)).randomTimes
+            assertEquals(3, times.size)
+            assertEquals("in order, never two at once", times.sorted().distinct(), times)
+            // One random moment in each hour of the 14:00-17:00 frame.
+            assertTrue(times[0] in at(h = 14) until at(h = 15))
+            assertTrue(times[1] in at(h = 15) until at(h = 16))
+            assertTrue(times[2] in at(h = 16)..at(h = 17))
+        }
+    }
+
+    @Test
+    fun theMomentsChangeFromFrameToFrame() {
+        val firsts = (0 until 50).map { frame(14, 3).copy(popCount = 3).planned(at(), Random(it)).randomTimes.first() }
+        assertTrue(firsts.toSet().size > 20)
+    }
+
+    @Test
+    fun eachPopUpInTheFrameShowsThenTheFrameIsDone() {
+        var note = frame(14, 3).copy(popCount = 3).planned(at(), Random(7))
+        val times = note.randomTimes
+        for (time in times) {
+            assertEquals(time, note.nextAlarmAt())
+            val (next, due) = note.fire(time)
+            assertTrue(due)
+            note = next
+        }
+        assertNull("all three shown", note.nextAlarmAt())
+    }
+
+    @Test
+    fun repeatingFrameMovesToTomorrowAfterItsLastPopUp() {
+        var note = frame(14, 2, Repeat.DAILY).copy(popCount = 2).planned(at(), Random(8))
+        val (afterFirst, _) = note.fire(note.randomTimes[0])
+        assertEquals("still today's frame", at(h = 14), afterFirst.remindAt)
+        assertEquals(note.randomTimes[1], afterFirst.nextAlarmAt())
+        note = afterFirst.fire(note.randomTimes[1], Random(9)).first
+        assertEquals(at(date = 19, h = 14), note.remindAt)
+        assertEquals(2, note.randomTimes.size)
+        assertTrue(note.randomTimes.all { it in at(date = 19, h = 14)..at(date = 19, h = 16) })
+    }
+
+    @Test
+    fun popUpsMissedWhilePhoneWasOffShowOnce() {
+        val note = frame(14, 3).copy(popCount = 3).planned(at(), Random(10))
+        val (after, due) = note.fire(note.randomTimes[1] + minute) // the first two were missed
+        assertTrue(due)
+        assertEquals(note.randomTimes[2], after.nextAlarmAt())
+    }
+
+    @Test
+    fun cannotAskForMorePopUpsThanMinutes() {
+        val times = frame(14, 0).copy(windowMinutes = 2, popCount = 5).planned(at(), Random(11)).randomTimes
+        assertEquals(listOf(at(h = 14), at(h = 14, m = 1), at(h = 14, m = 2)), times)
+    }
+
+    @Test
+    fun movingAFrameMovesAllItsPopUps() {
+        val note = frame(14, 3).copy(popCount = 2, randomTimes = listOf(at(h = 14, m = 30), at(h = 16)))
+        val later = note.shifted(15, now = at())!!
+        assertEquals(listOf(at(h = 14, m = 45), at(h = 16, m = 15)), later.randomTimes)
+    }
+
     // ---- Moving a pop-up 15 minutes earlier or later ----
 
     @Test
@@ -195,7 +262,7 @@ class NoteTest {
 
     @Test
     fun timeFrameMovesAsAWholeAndKeepsItsMoment() {
-        val note = frame(14, 2).copy(randomAt = at(h = 15, m = 10))
+        val note = frame(14, 2).copy(randomTimes = listOf(at(h = 15, m = 10)))
         val later = note.shifted(15, now = at())!!
         assertEquals(at(h = 14, m = 15), later.remindAt)
         assertEquals(at(h = 15, m = 25), later.popAt)
@@ -207,7 +274,7 @@ class NoteTest {
     @Test
     fun movingAStartedFrameEarlierNeverPopsUpInThePast() {
         val now = at(h = 15)
-        val note = frame(14, 2).copy(randomAt = at(h = 15, m = 5))
+        val note = frame(14, 2).copy(randomTimes = listOf(at(h = 15, m = 5)))
         val earlier = note.shifted(-15, now)!!
         assertTrue(earlier.popAt!! > now)
         assertTrue(earlier.popAt!! <= earlier.windowEnd!!)
@@ -230,7 +297,8 @@ class NoteTest {
             done = false,
             remindAt = at(),
             windowMinutes = 90,
-            randomAt = at() + 30 * minute,
+            popCount = 2,
+            randomTimes = listOf(at() + 30 * minute, at() + 70 * minute),
             repeat = Repeat.WEEKLY,
             snoozeUntil = at() + minute,
             lastNotifiedAt = at() - day,
@@ -240,5 +308,14 @@ class NoteTest {
 
         val plain = Note(id = 8, text = "No reminder", createdAt = at())
         assertEquals(plain, Note.fromJson(plain.toJson()))
+
+        // A time frame saved by version 0.2, which had a single "randomAt" moment.
+        val old = org.json.JSONObject(
+            """{"id":9,"text":"Old","remindAt":${at()},"windowMinutes":60,"randomAt":${at() + 5 * minute},"repeat":"NONE"}"""
+        )
+        val loaded = Note.fromJson(old)
+        assertEquals(listOf(at() + 5 * minute), loaded.randomTimes)
+        assertEquals(1, loaded.popCount)
+        assertEquals(at() + 5 * minute, loaded.nextAlarmAt())
     }
 }

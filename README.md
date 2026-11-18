@@ -7,9 +7,12 @@ reminders at whatever times you choose.
   small window that opens over the home screen. Tap a card to edit it, or tap a task's circle
   to tick it off. Finished tasks stay, greyed out and crossed out, until you tap **Clear done**
   (or **Clear all**, which asks first) at the bottom of the widget.
-- **Pop-ups at an exact time:** in 15 min, in 1 hour, tomorrow morning, or any date and time you pick.
-- **Pop-ups in a time frame:** choose a frame such as "this evening" or 14:00–16:00, and the
-  pop-up arrives at a random moment inside it. A repeating frame picks a new random moment each time.
+- **Pop-ups at an exact time:** in 15 min, in 1 hour, tomorrow morning, or any date and time you
+  pick on roll wheels (month and day, then hour, minute and AM/PM).
+- **Pop-ups in a time frame:** choose a frame such as "this evening" or 2:00–4:00 PM, and choose
+  1, 2, 3 or 5 pop-ups. Each pop-up arrives at a random moment inside the frame, never at a set
+  time. Several pop-ups are spread across the frame (one random moment in each part), and a
+  repeating frame picks new random moments every time.
 - **−15 / +15 buttons** on each card move its upcoming pop-up (or its whole time frame)
   15 minutes earlier or later.
 - Reminders can repeat every hour, every day, on weekdays, or every week. When it's time,
@@ -67,6 +70,7 @@ With Android Studio, open this folder and press Run. From a terminal, with the A
 | `WidgetClickActivity.kt` | Invisible screen that handles taps on widget cards (open, tick off, −15/+15) |
 | `WidgetActionReceiver.kt`, `ConfirmClearActivity.kt` | The widget's Clear done and Clear all buttons |
 | `EditNoteActivity.kt` | The floating editor (text, note/task, exact time or time frame, repeat) |
+| `WheelPicker.kt` | The roll-wheel date and time pickers |
 | `MainActivity.kt`, `NotesAdapter.kt` | The in-app list of everything |
 | `Note.kt` | The note model and the rules for time frames, repeats, snoozing and moving pop-ups |
 | `res/values/colors.xml`, `res/values-night/colors.xml` | The day and night colour palettes |

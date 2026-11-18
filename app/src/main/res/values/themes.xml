@@ -28,6 +28,13 @@
         <item name="colorError">@color/nl_danger</item>
     </style>
 
+    <!-- Roll wheels in the date/time pickers. -->
+    <style name="ThemeOverlay.Notelet.Wheel" parent="">
+        <item name="android:textColorPrimary">@color/nl_text</item>
+        <item name="android:textColorSecondary">@color/nl_text_secondary</item>
+        <item name="android:colorControlNormal">@color/nl_accent</item>
+    </style>
+
     <style name="Theme.Notelet" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowBackground">@color/nl_background</item>
         <item name="android:statusBarColor">@color/nl_background</item>

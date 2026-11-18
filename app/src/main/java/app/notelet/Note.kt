@@ -1,6 +1,7 @@
 package app.notelet
 
 import android.net.Uri
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Calendar
 import kotlin.random.Random
@@ -40,23 +41,31 @@ enum class Repeat(val labelRes: Int, val maxWindowMinutes: Int) {
 }
 
 /**
- * A random whole minute inside the frame [start, start + windowMinutes] that is
- * still after [now].
+ * [count] random whole minutes inside the frame [start, start + windowMinutes], all
+ * after [now], in order. The (remaining) frame is split into [count] equal parts and
+ * one moment is picked at random in each, so several pop-ups are spread across the
+ * frame instead of bunching up.
  */
-fun pickRandomTime(start: Long, windowMinutes: Int, now: Long, random: Random): Long {
+fun pickRandomTimes(start: Long, windowMinutes: Int, count: Int, now: Long, random: Random): List<Long> {
     val firstAllowed = ((maxOf(start, now + 1) - start + MINUTE - 1) / MINUTE).toInt()
-    if (firstAllowed >= windowMinutes) return start + windowMinutes * MINUTE
-    return start + random.nextInt(firstAllowed, windowMinutes + 1) * MINUTE
+    if (firstAllowed > windowMinutes) return listOf(start + windowMinutes * MINUTE)
+    val slots = windowMinutes - firstAllowed + 1
+    val n = count.coerceIn(1, slots)
+    return List(n) { i ->
+        val from = firstAllowed + i * slots / n
+        val until = firstAllowed + (i + 1) * slots / n
+        start + random.nextInt(from, until) * MINUTE
+    }
 }
 
 /**
  * One note or task.
  *
  * A reminder is either an exact time ([windowMinutes] = 0, pops up at [remindAt]) or a
- * time frame from [remindAt] lasting [windowMinutes], which pops up at [randomAt], a
- * moment picked at random inside the frame. A reminder counts as shown once
- * [lastNotifiedAt] has caught up with it; repeating reminders move forward each time
- * they fire.
+ * time frame from [remindAt] lasting [windowMinutes], which pops up [popCount] times at
+ * [randomTimes]: moments picked at random inside the frame. A pop-up counts as shown
+ * once [lastNotifiedAt] has caught up with it; repeating reminders move forward to the
+ * next frame after its last pop-up.
  */
 data class Note(
     val id: Long,
@@ -65,7 +74,8 @@ data class Note(
     val done: Boolean = false,
     val remindAt: Long? = null,
     val windowMinutes: Int = 0,
-    val randomAt: Long? = null,
+    val popCount: Int = 1,
+    val randomTimes: List<Long> = emptyList(),
     val repeat: Repeat = Repeat.NONE,
     val snoozeUntil: Long? = null,
     val lastNotifiedAt: Long = 0L,
@@ -84,9 +94,13 @@ data class Note(
     /** End of the time frame, or null for an exact-time reminder. */
     val windowEnd: Long? get() = remindAt?.takeIf { windowMinutes > 0 }?.plus(windowMinutes * MINUTE)
 
-    /** When the current reminder pops up (for a time frame, the random moment). */
+    /** When the reminder pops up next (for a time frame, its next random moment). */
     val popAt: Long?
-        get() = remindAt?.let { start -> if (windowMinutes > 0) randomAt ?: start else start }
+        get() {
+            val start = remindAt ?: return null
+            if (windowMinutes == 0 || randomTimes.isEmpty()) return start
+            return randomTimes.firstOrNull { it > lastNotifiedAt } ?: randomTimes.last()
+        }
 
     /** True while a reminder (or snooze) is still waiting to pop up. */
     val hasUpcomingReminder: Boolean get() = nextAlarmAt() != null
@@ -101,17 +115,20 @@ data class Note(
     /**
      * Lines up the reminder from scratch: caps the frame to what the repeat allows,
      * moves a repeating reminder whose time has gone to its next occurrence, and
-     * picks the random moment inside a time frame.
+     * picks the random moments inside a time frame.
      */
     fun planned(now: Long, random: Random = Random.Default): Note {
-        val start = remindAt ?: return copy(windowMinutes = 0, randomAt = null, repeat = Repeat.NONE)
+        val start = remindAt
+            ?: return copy(windowMinutes = 0, popCount = 1, randomTimes = emptyList(), repeat = Repeat.NONE)
         val window = windowMinutes.coerceIn(0, repeat.maxWindowMinutes)
         val span = window * MINUTE
         val nextStart = if (repeat != Repeat.NONE && start + span <= now) repeat.nextAfter(start, now - span) else start
+        val pops = popCount.coerceAtLeast(1)
         return copy(
             remindAt = nextStart,
             windowMinutes = window,
-            randomAt = if (window > 0) pickRandomTime(nextStart, window, now, random) else null,
+            popCount = pops,
+            randomTimes = if (window > 0) pickRandomTimes(nextStart, window, pops, now, random) else emptyList(),
         )
     }
 
@@ -134,14 +151,20 @@ data class Note(
         val pop = popAt
         if (start != null && pop != null && pop > lastNotifiedAt && pop <= now + FIRE_GRACE_MS) {
             val firedAt = maxOf(now, pop)
-            updated = if (repeat == Repeat.NONE) {
+            // Pop-ups missed while the phone was off are shown once, together.
+            val moreInThisFrame = windowMinutes > 0 && randomTimes.any { it > firedAt }
+            updated = if (moreInThisFrame || repeat == Repeat.NONE) {
                 updated.copy(lastNotifiedAt = firedAt)
             } else {
                 val nextStart = repeat.nextAfter(start, firedAt)
                 updated.copy(
                     lastNotifiedAt = firedAt,
                     remindAt = nextStart,
-                    randomAt = if (windowMinutes > 0) pickRandomTime(nextStart, windowMinutes, firedAt, random) else null,
+                    randomTimes = if (windowMinutes > 0) {
+                        pickRandomTimes(nextStart, windowMinutes, popCount, firedAt, random)
+                    } else {
+                        emptyList()
+                    },
                 )
             }
             due = true
@@ -174,9 +197,11 @@ data class Note(
         }
         val newEnd = newStart + windowMinutes * MINUTE
         if (newEnd < earliest) return null
+        val pending = randomTimes.filter { it > lastNotifiedAt }.ifEmpty { listOf(pop) }
+        val lowest = maxOf(newStart, earliest)
         return copy(
             remindAt = newStart,
-            randomAt = (pop + delta).coerceIn(maxOf(newStart, earliest), newEnd),
+            randomTimes = pending.map { (it + delta).coerceIn(lowest, newEnd) }.distinct(),
         )
     }
 
@@ -187,7 +212,8 @@ data class Note(
         put("done", done)
         remindAt?.let { put("remindAt", it) }
         put("windowMinutes", windowMinutes)
-        randomAt?.let { put("randomAt", it) }
+        put("popCount", popCount)
+        put("randomTimes", JSONArray(randomTimes))
         put("repeat", repeat.name)
         snoozeUntil?.let { put("snoozeUntil", it) }
         put("lastNotifiedAt", lastNotifiedAt)
@@ -205,7 +231,10 @@ data class Note(
             done = json.optBoolean("done"),
             remindAt = if (json.has("remindAt")) json.getLong("remindAt") else null,
             windowMinutes = json.optInt("windowMinutes", 0),
-            randomAt = if (json.has("randomAt")) json.getLong("randomAt") else null,
+            popCount = json.optInt("popCount", 1).coerceAtLeast(1),
+            randomTimes = json.optJSONArray("randomTimes")?.let { times -> List(times.length()) { times.getLong(it) } }
+                // Notes saved by version 0.2 had a single random moment.
+                ?: if (json.has("randomAt")) listOf(json.getLong("randomAt")) else emptyList(),
             repeat = Repeat.entries.firstOrNull { it.name == json.optString("repeat") } ?: Repeat.NONE,
             snoozeUntil = if (json.has("snoozeUntil")) json.getLong("snoozeUntil") else null,
             lastNotifiedAt = json.optLong("lastNotifiedAt"),
