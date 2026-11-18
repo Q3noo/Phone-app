@@ -32,8 +32,14 @@ jobs:
 
       - name: Check the APK has no internet access
         run: |
+          set -o pipefail
           AAPT2="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)aapt2"
           "$AAPT2" dump permissions Notelet.apk | tee permissions.txt
+          # Fail rather than pass by accident if the permissions couldn't be read.
+          if ! grep -q "^package: app.notelet$" permissions.txt; then
+            echo "::error::Could not read the APK's permissions."
+            exit 1
+          fi
           if grep -E "android\.permission\.(INTERNET|ACCESS_NETWORK_STATE)" permissions.txt; then
             echo "::error::The APK asks for network access. It must stay offline."
             exit 1
