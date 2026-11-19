@@ -56,6 +56,9 @@ object Notifications {
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setColor(ContextCompat.getColor(context, R.color.nl_accent))
 
+        // "Step 3" in the pop-up's header when the task has had updates.
+        if (note.steps.isNotEmpty()) builder.setSubText(context.getString(R.string.step_n, note.steps.size + 1))
+
         val details = note.details
         if (details.isNotEmpty()) {
             builder.setContentText(details)

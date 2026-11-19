@@ -44,6 +44,26 @@ object NoteActions {
         Notifications.cancel(context, id)
     }
 
+    /**
+     * Adds an update to a task: the current step is crossed off and [text] becomes the
+     * next step, with its own pop-up time. Returns the updated task.
+     */
+    fun addUpdate(
+        context: Context,
+        id: Long,
+        text: String,
+        remindAt: Long?,
+        windowMinutes: Int,
+        popCount: Int,
+        repeat: Repeat,
+    ): Note? {
+        val note = NoteStore.get(context, id) ?: return null
+        val updated = note.withUpdate(text, remindAt, windowMinutes, popCount, repeat, System.currentTimeMillis())
+        Notifications.cancel(context, id) // the old step's pop-up no longer applies
+        save(context, updated)
+        return updated
+    }
+
     /** Moves the upcoming pop-up by [minutes]. Returns false if it can't be moved. */
     fun shift(context: Context, id: Long, minutes: Int): Boolean {
         val note = NoteStore.get(context, id) ?: return false

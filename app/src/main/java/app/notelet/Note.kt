@@ -59,6 +59,37 @@ fun pickRandomTimes(start: Long, windowMinutes: Int, count: Int, now: Long, rand
 }
 
 /**
+ * An earlier step of a task, finished when the next update was added. Shown crossed
+ * out above the current step, with the time it had.
+ */
+data class Step(
+    val text: String,
+    /** The step's exact time or time-frame start (null if it had none, or repeated). */
+    val remindAt: Long? = null,
+    val windowMinutes: Int = 0,
+    val doneAt: Long,
+) {
+    val headline: String
+        get() = text.trim().lineSequence().firstOrNull()?.trim().orEmpty()
+
+    fun toJson(): JSONObject = JSONObject().apply {
+        put("text", text)
+        remindAt?.let { put("remindAt", it) }
+        put("windowMinutes", windowMinutes)
+        put("doneAt", doneAt)
+    }
+
+    companion object {
+        fun fromJson(json: JSONObject) = Step(
+            text = json.optString("text"),
+            remindAt = if (json.has("remindAt")) json.getLong("remindAt") else null,
+            windowMinutes = json.optInt("windowMinutes", 0),
+            doneAt = json.optLong("doneAt"),
+        )
+    }
+}
+
+/**
  * One note or task.
  *
  * A reminder is either an exact time ([windowMinutes] = 0, pops up at [remindAt]) or a
@@ -66,6 +97,9 @@ fun pickRandomTimes(start: Long, windowMinutes: Int, count: Int, now: Long, rand
  * [randomTimes]: moments picked at random inside the frame. A pop-up counts as shown
  * once [lastNotifiedAt] has caught up with it; repeating reminders move forward to the
  * next frame after its last pop-up.
+ *
+ * A task can have updates: [steps] are its earlier, finished steps (oldest first) and
+ * [text] with its reminder is the current step.
  */
 data class Note(
     val id: Long,
@@ -80,6 +114,7 @@ data class Note(
     val snoozeUntil: Long? = null,
     val lastNotifiedAt: Long = 0L,
     val createdAt: Long = System.currentTimeMillis(),
+    val steps: List<Step> = emptyList(),
 ) {
     /** First line: used as the pop-up title and the list title. */
     val headline: String
@@ -130,6 +165,44 @@ data class Note(
             popCount = pops,
             randomTimes = if (window > 0) pickRandomTimes(nextStart, window, pops, now, random) else emptyList(),
         )
+    }
+
+    /** The current step as it is kept once an update replaces it. */
+    fun asFinishedStep(now: Long) = Step(
+        text = text,
+        // A repeating reminder's stored time is its *next* occurrence, which would
+        // read wrongly on a finished step, so only one-off times are kept.
+        remindAt = remindAt?.takeIf { repeat == Repeat.NONE },
+        windowMinutes = if (repeat == Repeat.NONE) windowMinutes else 0,
+        doneAt = now,
+    )
+
+    /**
+     * Adds an update: the current step is crossed off (kept in [steps] with its time)
+     * and [newText] becomes the current step, with its own exact time or time frame.
+     * A finished task opens again.
+     */
+    fun withUpdate(
+        newText: String,
+        remindAt: Long?,
+        windowMinutes: Int,
+        popCount: Int,
+        repeat: Repeat,
+        now: Long,
+        random: Random = Random.Default,
+    ): Note {
+        return copy(
+            steps = steps + asFinishedStep(now),
+            text = newText,
+            isTask = true,
+            done = false,
+            remindAt = remindAt,
+            windowMinutes = if (remindAt == null) 0 else windowMinutes,
+            popCount = popCount,
+            randomTimes = emptyList(),
+            repeat = if (remindAt == null) Repeat.NONE else repeat,
+            snoozeUntil = null,
+        ).planned(now, random)
     }
 
     /**
@@ -218,6 +291,7 @@ data class Note(
         snoozeUntil?.let { put("snoozeUntil", it) }
         put("lastNotifiedAt", lastNotifiedAt)
         put("createdAt", createdAt)
+        if (steps.isNotEmpty()) put("steps", JSONArray().apply { steps.forEach { put(it.toJson()) } })
     }
 
     companion object {
@@ -239,6 +313,8 @@ data class Note(
             snoozeUntil = if (json.has("snoozeUntil")) json.getLong("snoozeUntil") else null,
             lastNotifiedAt = json.optLong("lastNotifiedAt"),
             createdAt = json.optLong("createdAt"),
+            steps = json.optJSONArray("steps")?.let { list -> List(list.length()) { Step.fromJson(list.getJSONObject(it)) } }
+                .orEmpty(),
         )
     }
 }

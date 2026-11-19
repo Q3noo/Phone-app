@@ -8,9 +8,9 @@
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="6dp"
-    android:paddingTop="4dp"
+    android:paddingTop="8dp"
     android:paddingEnd="12dp"
-    android:paddingBottom="4dp">
+    android:paddingBottom="8dp">
 
     <ImageView
         android:id="@+id/item_check"
@@ -27,7 +27,25 @@
         android:layout_marginStart="2dp"
         android:layout_weight="1"
         android:ellipsize="end"
-        android:maxLines="1"
+        android:maxLines="2"
         android:textColor="@color/nl_text_secondary"
         android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/item_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/widget_pill_neutral"
+            android:contentDescription="@string/update_desc"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:minWidth="52dp"
+            android:paddingStart="12dp"
+            android:paddingTop="7dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="7dp"
+            android:text="@string/update"
+            android:textColor="@color/nl_on_neutral_pill"
+            android:textSize="13sp" />
 </LinearLayout>

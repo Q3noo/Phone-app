@@ -52,6 +52,7 @@ class MainActivity : NoteletActivity() {
                 }
                 reload()
             },
+            onUpdate = { note -> startActivity(EditNoteActivity.updateIntent(this, note.id)) },
         )
         findViewById<RecyclerView>(R.id.list).apply {
             layoutManager = LinearLayoutManager(this@MainActivity)

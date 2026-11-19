@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A note or task in the app: earlier steps (crossed out, joined by a line), the current step, then its buttons. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="?attr/materialCardViewFilledStyle"
@@ -15,98 +16,137 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingStart="6dp"
-        android:paddingTop="8dp"
+        android:paddingTop="12dp"
         android:paddingEnd="16dp"
-        android:paddingBottom="10dp">
+        android:paddingBottom="12dp">
+
+        <LinearLayout
+            android:id="@+id/history"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/check"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/mark_done"
-                android:padding="11dp"
-                android:src="@drawable/ic_task_open" />
+            <LinearLayout
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/line_in"
+                    android:layout_width="2dp"
+                    android:layout_height="4dp"
+                    android:background="@color/nl_timeline"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/check"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/mark_done"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_task_open" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingTop="9dp">
 
                 <TextView
                     android:id="@+id/title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
-                    android:maxLines="2"
+                    android:maxLines="4"
                     android:textAppearance="?attr/textAppearanceTitleMedium" />
 
                 <TextView
                     android:id="@+id/details"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="3dp"
                     android:ellipsize="end"
-                    android:maxLines="3"
+                    android:maxLines="6"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     android:textColor="@color/nl_text_secondary" />
+
+                <TextView
+                    android:id="@+id/reminder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:textAppearance="?attr/textAppearanceLabelLarge"
+                    android:textColor="@color/nl_accent" />
             </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/time_row"
+            android:id="@+id/buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="10dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="50dp">
-
-            <TextView
-                android:id="@+id/reminder"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textAppearance="?attr/textAppearanceLabelLarge"
-                android:textColor="@color/nl_accent" />
+            android:paddingStart="42dp">
 
             <Button
                 android:id="@+id/earlier"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_marginStart="8dp"
+                android:layout_height="38dp"
                 android:contentDescription="@string/earlier_desc"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="@string/earlier_15" />
 
             <Button
                 android:id="@+id/later"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="38dp"
                 android:layout_marginStart="6dp"
                 android:contentDescription="@string/later_desc"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="@string/later_15" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/update"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:contentDescription="@string/update_desc"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="@string/update" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

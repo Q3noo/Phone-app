@@ -38,6 +38,16 @@ object Format {
         }
     }
 
+    /** The time line under a finished step: the time it had, or when it was finished. */
+    fun stepLine(context: Context, step: Step): String {
+        val at = step.remindAt ?: return context.getString(R.string.step_done_at, whenText(context, step.doneAt))
+        return if (step.windowMinutes > 0) {
+            context.getString(R.string.frame_at, frameText(context, at, step.windowMinutes))
+        } else {
+            context.getString(R.string.reminder_at, whenText(context, at))
+        }
+    }
+
     /** The line shown on a note about its next pop-up, or null if none is waiting. */
     fun reminderLine(context: Context, note: Note): String? {
         if (note.done) return null

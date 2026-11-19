@@ -20,4 +20,5 @@
     <color name="nl_danger">#F2B8B5</color>
     <color name="nl_outline">#7A8480</color>
     <color name="nl_outline_soft">#353D3B</color>
+    <color name="nl_timeline">#3E6D63</color>
 </resources>

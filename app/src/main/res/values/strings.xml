@@ -15,6 +15,18 @@
     <string name="later_desc">Pop up 15 minutes later</string>
     <string name="cant_move">Can\'t move a pop-up into the past</string>
 
+    <!-- Updates: a task's next step -->
+    <string name="update">Update</string>
+    <string name="update_desc">Add an update to this task</string>
+    <string name="update_task">Update task</string>
+    <string name="hint_update">What\'s the update or next step?</string>
+    <string name="steps_so_far">Steps so far</string>
+    <string name="step_done_at">✓ Done %1$s</string>
+    <string name="earlier_steps">+%1$d earlier steps</string>
+    <string name="step_n">Step %1$d</string>
+    <string name="update_added">Update added</string>
+    <string name="update_added_at">Update added · %1$s</string>
+
     <!-- Clearing -->
     <string name="clear_done">Clear done</string>
     <string name="clear_all">Clear all</string>

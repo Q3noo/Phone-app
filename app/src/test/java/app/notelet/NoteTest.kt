@@ -244,6 +244,48 @@ class NoteTest {
         assertEquals(listOf(at(h = 14, m = 45), at(h = 16, m = 15)), later.randomTimes)
     }
 
+    // ---- Updates: a task's next step ----
+
+    @Test
+    fun anUpdateCrossesOffTheOldStepAndStartsTheNextOne() {
+        val task = Note(id = 1, text = "Call the plumber", isTask = true, remindAt = at(h = 10))
+        val updated = task.withUpdate(
+            "Plumber comes Thursday\nleave the gate open", remindAt = at(date = 19, h = 9),
+            windowMinutes = 180, popCount = 2, repeat = Repeat.NONE, now = at(h = 11), random = Random(1),
+        )
+        assertEquals(listOf(Step("Call the plumber", at(h = 10), 0, doneAt = at(h = 11))), updated.steps)
+        assertEquals("Plumber comes Thursday", updated.headline)
+        assertFalse(updated.done)
+        assertEquals(2, updated.randomTimes.size)
+        assertTrue(updated.randomTimes.all { it in at(date = 19, h = 9)..at(date = 19, h = 12) })
+        assertEquals(updated.randomTimes.first(), updated.nextAlarmAt())
+    }
+
+    @Test
+    fun updatesPileUpInOrder() {
+        var task = Note(id = 1, text = "Step one", isTask = true)
+        task = task.withUpdate("Step two", null, 0, 1, Repeat.NONE, now = at())
+        task = task.withUpdate("Step three", null, 0, 1, Repeat.NONE, now = at() + hour)
+        assertEquals(listOf("Step one", "Step two"), task.steps.map { it.text })
+        assertEquals("Step three", task.text)
+        assertNull("no time given, no pop-up", task.nextAlarmAt())
+    }
+
+    @Test
+    fun updatingAFinishedTaskOpensItAgain() {
+        val done = Note(id = 1, text = "Send the form", isTask = true, done = true)
+        val updated = done.withUpdate("They want a signature too", at(h = 15), 0, 1, Repeat.NONE, now = at())
+        assertFalse(updated.done)
+        assertEquals(at(h = 15), updated.nextAlarmAt())
+    }
+
+    @Test
+    fun aRepeatingStepIsKeptWithoutItsNextTime() {
+        val daily = Note(id = 1, text = "Water plants", isTask = true, remindAt = at(date = 19), repeat = Repeat.DAILY)
+        val updated = daily.withUpdate("Plants moved outside", null, 0, 1, Repeat.NONE, now = at())
+        assertNull(updated.steps.single().remindAt)
+    }
+
     // ---- Moving a pop-up 15 minutes earlier or later ----
 
     @Test
@@ -303,6 +345,10 @@ class NoteTest {
             snoozeUntil = at() + minute,
             lastNotifiedAt = at() - day,
             createdAt = at() - 2 * day,
+            steps = listOf(
+                Step("Ask landlord", remindAt = at() - 2 * day, windowMinutes = 60, doneAt = at() - day),
+                Step("Find bank details", doneAt = at() - hour),
+            ),
         )
         assertEquals(note, Note.fromJson(note.toJson()))
 

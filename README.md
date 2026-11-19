@@ -15,6 +15,11 @@ reminders at whatever times you choose.
   repeating frame picks new random moments every time.
 - **−15 / +15 buttons** on each card move its upcoming pop-up (or its whole time frame)
   15 minutes earlier or later.
+- **Update button** on each task: when something changes and the task needs a next step, tap
+  **Update**, write the step and give it its own exact time or time frame. The previous step is
+  crossed out and kept with its time, and a line runs down from it to the new step. Updating a
+  finished task opens it again. The widget shows the last three steps ("+N earlier steps" for
+  older ones); the app shows them all.
 - Reminders can repeat every hour, every day, on weekdays, or every week. When it's time,
   the pop-up drops down from the top of the screen, even when the app is closed, with
   **Done** (for tasks) and **Snooze 10 min** buttons.
@@ -71,6 +76,7 @@ With Android Studio, open this folder and press Run. From a terminal, with the A
 | `WidgetActionReceiver.kt`, `ConfirmClearActivity.kt` | The widget's Clear done and Clear all buttons |
 | `EditNoteActivity.kt` | The floating editor (text, note/task, exact time or time frame, repeat) |
 | `WheelPicker.kt` | The roll-wheel date and time pickers |
+| `StepRows.kt`, `layout/widget_step_row.xml` | A task's earlier steps: crossed out, with their time and the line between them |
 | `MainActivity.kt`, `NotesAdapter.kt` | The in-app list of everything |
 | `Note.kt` | The note model and the rules for time frames, repeats, snoozing and moving pop-ups |
 | `res/values/colors.xml`, `res/values-night/colors.xml` | The day and night colour palettes |

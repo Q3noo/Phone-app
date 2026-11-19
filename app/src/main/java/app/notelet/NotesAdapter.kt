@@ -16,6 +16,7 @@ class NotesAdapter(
     private val onOpen: (Note) -> Unit,
     private val onToggleDone: (Note) -> Unit,
     private val onShift: (Note, Int) -> Unit,
+    private val onUpdate: (Note) -> Unit,
 ) : RecyclerView.Adapter<NotesAdapter.Holder>() {
 
     private var notes: List<Note> = emptyList()
@@ -69,11 +70,24 @@ class NotesAdapter(
         holder.details.text = details
         holder.details.isVisible = details.isNotEmpty() && !note.done
 
+        // Earlier steps, crossed out and joined by a line down to this one.
+        StepRows.fill(holder.history, note.steps)
+        holder.history.isVisible = note.steps.isNotEmpty()
+        holder.lineIn.isVisible = note.steps.isNotEmpty()
+
         val reminder = Format.reminderLine(context, note)
-        holder.timeRow.isVisible = reminder != null
         holder.reminder.text = reminder
+        holder.reminder.isVisible = reminder != null
+
+        // Buttons under the task.
+        val canShift = reminder != null
+        holder.earlier.isVisible = canShift
+        holder.later.isVisible = canShift
+        holder.update.isVisible = note.isTask
+        holder.buttons.isVisible = canShift || note.isTask
         holder.earlier.setOnClickListener { onShift(note, -NoteWidgetService.SHIFT_MINUTES) }
         holder.later.setOnClickListener { onShift(note, NoteWidgetService.SHIFT_MINUTES) }
+        holder.update.setOnClickListener { onUpdate(note) }
 
         holder.itemView.setOnClickListener { onOpen(note) }
     }
@@ -83,9 +97,12 @@ class NotesAdapter(
         val check: ImageView = view.findViewById(R.id.check)
         val title: TextView = view.findViewById(R.id.title)
         val details: TextView = view.findViewById(R.id.details)
-        val timeRow: View = view.findViewById(R.id.time_row)
+        val history: ViewGroup = view.findViewById(R.id.history)
+        val lineIn: View = view.findViewById(R.id.line_in)
         val reminder: TextView = view.findViewById(R.id.reminder)
+        val buttons: View = view.findViewById(R.id.buttons)
         val earlier: View = view.findViewById(R.id.earlier)
         val later: View = view.findViewById(R.id.later)
+        val update: View = view.findViewById(R.id.update)
     }
 }

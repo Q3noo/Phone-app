@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A small muted check for a finished earlier step. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp"
+    android:height="18dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/nl_timeline"
+        android:pathData="M2,12a10,10 0 1,0 20,0a10,10 0 1,0 -20,0Z" />
+    <path
+        android:pathData="M7.2,12.4L10.4,15.6L16.8,9.2"
+        android:strokeWidth="2.4"
+        android:strokeColor="@color/nl_card"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

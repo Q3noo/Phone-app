@@ -6,7 +6,8 @@ import android.widget.Toast
 
 /**
  * Widget cards can only share one click target, so taps land here first.
- * It has no screen: it ticks a task off, moves its pop-up, or opens the editor, then closes.
+ * It has no screen: it ticks a task off, moves its pop-up, or opens the editor
+ * (to edit, or to add an update), then closes.
  */
 class WidgetClickActivity : Activity() {
 
@@ -22,6 +23,7 @@ class WidgetClickActivity : Activity() {
                         Toast.makeText(applicationContext, R.string.cant_move, Toast.LENGTH_SHORT).show()
                     }
                 }
+                ACTION_UPDATE -> startActivity(EditNoteActivity.updateIntent(this, id))
                 else -> startActivity(EditNoteActivity.editIntent(this, id))
             }
         }
@@ -34,5 +36,6 @@ class WidgetClickActivity : Activity() {
         const val ACTION_OPEN = "open"
         const val ACTION_TOGGLE = "toggle"
         const val ACTION_SHIFT = "shift"
+        const val ACTION_UPDATE = "update"
     }
 }

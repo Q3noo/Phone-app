@@ -26,4 +26,6 @@
     <color name="nl_danger">#B3261E</color>
     <color name="nl_outline">#8A938F</color>
     <color name="nl_outline_soft">#D5D1C7</color>
+    <!-- The line joining a task's steps. -->
+    <color name="nl_timeline">#A9CFC5</color>
 </resources>

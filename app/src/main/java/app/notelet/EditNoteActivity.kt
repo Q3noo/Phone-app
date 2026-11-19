@@ -33,6 +33,9 @@ class EditNoteActivity : NoteletActivity() {
 
     private var existing: Note? = null
 
+    /** Adding an update (the next step) to an existing task, rather than editing it. */
+    private var updateMode = false
+
     /** Exact pop-up time, or the start of the time frame. */
     private var remindAt: Long? = null
 
@@ -54,6 +57,8 @@ class EditNoteActivity : NoteletActivity() {
     private lateinit var repeatGroup: ChipGroup
     private lateinit var popsSection: View
     private lateinit var popsGroup: ChipGroup
+    private lateinit var historySection: View
+    private lateinit var historyList: ViewGroup
 
     private val askNotifications =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -83,6 +88,8 @@ class EditNoteActivity : NoteletActivity() {
         repeatGroup = findViewById(R.id.repeat_group)
         popsSection = findViewById(R.id.pops_section)
         popsGroup = findViewById(R.id.pops_group)
+        historySection = findViewById(R.id.history_section)
+        historyList = findViewById(R.id.history_list)
 
         val noteId = intent.getLongExtra(EXTRA_NOTE_ID, -1L)
         if (noteId > 0) {
@@ -94,10 +101,27 @@ class EditNoteActivity : NoteletActivity() {
             }
         }
         val note = existing
+        updateMode = note != null && intent.getBooleanExtra(EXTRA_UPDATE, false)
+
+        // The task's steps so far; when adding an update, the current step joins them.
+        if (note != null) {
+            val steps = if (updateMode) note.steps + note.asFinishedStep(System.currentTimeMillis()) else note.steps
+            StepRows.fill(historyList, steps)
+            historySection.isVisible = steps.isNotEmpty()
+        }
+        typeGroup.isVisible = !updateMode
 
         if (savedInstanceState != null) {
             remindAt = savedInstanceState.getLong(STATE_REMIND_AT, -1L).takeIf { it > 0 }
             windowMinutes = savedInstanceState.getInt(STATE_WINDOW, DEFAULT_WINDOW_MINUTES)
+        } else if (updateMode) {
+            // A blank step, with its own pop-up time.
+            textInput.requestFocus()
+            @Suppress("DEPRECATION")
+            window.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE or
+                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE,
+            )
         } else if (note != null) {
             textInput.setText(note.text)
             typeGroup.check(if (note.isTask) R.id.type_task else R.id.type_note)
@@ -151,7 +175,7 @@ class EditNoteActivity : NoteletActivity() {
         findViewById<View>(R.id.cancel).setOnClickListener { finish() }
         findViewById<View>(R.id.save).setOnClickListener { save() }
         findViewById<View>(R.id.delete).apply {
-            isVisible = note != null
+            isVisible = note != null && !updateMode
             setOnClickListener { confirmDelete() }
         }
 
@@ -169,6 +193,12 @@ class EditNoteActivity : NoteletActivity() {
     private fun isFrame() = modeGroup.checkedButtonId == R.id.mode_frame
 
     private fun updateTypeUi() {
+        if (updateMode) {
+            doneCheck.isVisible = false
+            heading.setText(R.string.update_task)
+            textLayout.hint = getString(R.string.hint_update)
+            return
+        }
         val task = isTask()
         doneCheck.isVisible = task && existing != null
         heading.setText(
@@ -270,6 +300,10 @@ class EditNoteActivity : NoteletActivity() {
             textLayout.error = getString(R.string.error_empty)
             return
         }
+        if (updateMode) {
+            saveUpdate(text)
+            return
+        }
 
         val now = System.currentTimeMillis()
         val old = existing
@@ -318,6 +352,33 @@ class EditNoteActivity : NoteletActivity() {
             }
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
+        finish()
+    }
+
+    /** Crosses off the current step and adds [text] as the next one, with its pop-up time. */
+    private fun saveUpdate(text: String) {
+        val note = existing ?: return
+        val now = System.currentTimeMillis()
+        val start = remindAt
+        val window = if (start != null && isFrame()) windowMinutes else 0
+        val pops = if (window > 0) selectedPops() else 1
+        val repeat = if (start == null) Repeat.NONE else selectedRepeat()
+        if (start != null && repeat == Repeat.NONE && start + window * MINUTE <= now) {
+            Toast.makeText(this, R.string.error_past, Toast.LENGTH_LONG).show()
+            return
+        }
+        val updated = NoteActions.addUpdate(this, note.id, text, start, window, pops, repeat)
+        if (updated == null) {
+            Toast.makeText(this, R.string.note_missing, Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+        val time = if (updated.hasUpcomingReminder) Format.reminderText(this, updated) else null
+        Toast.makeText(
+            this,
+            if (time != null) getString(R.string.update_added_at, time) else getString(R.string.update_added),
+            Toast.LENGTH_SHORT,
+        ).show()
         finish()
     }
 
@@ -393,6 +454,7 @@ class EditNoteActivity : NoteletActivity() {
         private const val STATE_REMIND_AT = "remind_at"
         private const val STATE_WINDOW = "window"
         private const val DEFAULT_WINDOW_MINUTES = 60
+        private const val EXTRA_UPDATE = "app.notelet.extra.UPDATE"
 
         fun newIntent(context: Context): Intent = Intent(context, EditNoteActivity::class.java)
 
@@ -400,5 +462,9 @@ class EditNoteActivity : NoteletActivity() {
             Intent(context, EditNoteActivity::class.java)
                 .setData(noteUri(id))
                 .putExtra(EXTRA_NOTE_ID, id)
+
+        /** Opens the editor to add an update (the next step) to a task. */
+        fun updateIntent(context: Context, id: Long): Intent =
+            editIntent(context, id).putExtra(EXTRA_UPDATE, true)
     }
 }
